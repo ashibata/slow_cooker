@@ -63,5 +63,5 @@ class Temp:
 					GPIO.output(21, GPIO.LOW)
 					low_high = 'GPIO.LOW'
 				print(now, Temp.target_temp, self.temp_json[now], low_high)
-		except KeyboardInterrupt:
+		finally:
 			GPIO.cleanup()

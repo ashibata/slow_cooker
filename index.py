@@ -5,11 +5,11 @@ import subprocess
 import threading
 from temp import Temp
 
+TARGET_TEMPARATURE = 65
+
 @route('/static/:path#.+#', name='static')
 def static(path):
 	return static_file(path, root='static')
-
-TARGET_TEMPARATURE = 65
 
 @route('/')
 def root():
@@ -18,10 +18,11 @@ def root():
 
 def main():
 	try:
-		print('Temp control Start')
+		print('Temp Control Start')
+		global temp
 		temp = Temp(TARGET_TEMPARATURE)
 		print('Server Start')
-		run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+		run(host='0.0.0.0', port=8080, debug=True, reloader=False)
 	except:
 		import traceback
 		traceback.print_exc()
