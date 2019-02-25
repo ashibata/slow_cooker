@@ -23,6 +23,7 @@ class Temp:
 
 	def __del__(self):
 		GPIO.cleanup()
+		print'Temp class destructor worked'
 
 	def read_device_temp(self):
 		with open(Temp.DEVICE_FILE, 'r') as (f):
@@ -32,7 +33,7 @@ class Temp:
 	def read_temp(self):
 		lines = self.read_device_temp()
 		while lines[0].strip()[-3:] != 'YES':
-			sleep(0.2)
+			sleep(100)
 			lines = slef.read_device_temp()
 		equals_pos = lines[1].find('t=')
 		if equals_pos != -1:
@@ -63,5 +64,8 @@ class Temp:
 					GPIO.output(21, GPIO.LOW)
 					low_high = 'GPIO.LOW'
 				print(now, Temp.target_temp, Temp.temp_json[now], low_high)
+		except (KeyboardInterrupt, SystemExit):
+			print'Temp control_temp method execpt worked'
 		finally:
 			GPIO.cleanup()
+			print'Temp control_temp method finally worked'
