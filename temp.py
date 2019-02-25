@@ -1,16 +1,14 @@
 import datetime
-import glob
 import json
 import os
 import RPi.GPIO as GPIO
 import threading
-from collections import OrderedDict
 from time import sleep
 
 class Temp:
 	DEVICE_FILE = '/sys/bus/w1/devices/28-051680d0f7ff/w1_slave'
 	target_temp = 0
-	temp_json = {}
+	temp_json   = {}
 
 	def __init__(self, target_temp):
 		Temp.target_temp = target_temp
@@ -18,9 +16,10 @@ class Temp:
 		GPIO.setup(21, GPIO.OUT)
 		os.system('modprobe w1-gpio')
 		os.system('modprobe w1-therm')
-		thread = threading.Thread(target=self.control_temp)
-		thread.daemon = True
-		thread.start()
+		Temp.lock   = threading.Lock()
+		Temp.thread = threading.Thread(target=self.control_temp)
+		Temp.thread.daemon = True
+		Temp.thread.start()
 
 	def __del__(self):
 		GPIO.cleanup()
@@ -43,7 +42,7 @@ class Temp:
 
 	def chart_data(self):
 		data = {'labels': [],'datasets': []}
-		for key,val in sorted(self.temp_json.iteritems()):
+		for key,val in sorted(Temp.temp_json.iteritems()):
 			# removing u prefix of string
 			data['labels'].append(key.encode("ascii","replace"))
 			data['datasets'].append(val)
@@ -55,13 +54,14 @@ class Temp:
 		try:
 			while True:
 				now = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
-				self.temp_json[now] = self.read_temp()
-				if self.temp_json[now] < Temp.target_temp:
+				with Temp.lock:
+					Temp.temp_json[now] = self.read_temp()
+				if Temp.temp_json[now] < Temp.target_temp:
 					GPIO.output(21, GPIO.HIGH)
 					low_high = 'GPIO.HIGH'
 				else:
 					GPIO.output(21, GPIO.LOW)
 					low_high = 'GPIO.LOW'
-				print(now, Temp.target_temp, self.temp_json[now], low_high)
+				print(now, Temp.target_temp, Temp.temp_json[now], low_high)
 		finally:
 			GPIO.cleanup()
