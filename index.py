@@ -1,9 +1,9 @@
 from bottle import route, run, request, HTTPResponse, template, static_file
 from collections import OrderedDict
+import paste
 import json
 import subprocess
 import sys
-import threading
 from temp import Temp
 
 TARGET_TEMPARATURE = 59
@@ -18,17 +18,11 @@ def root():
 	return template("index", labels=data['labels'], datasets=data['datasets'])
 
 def main():
-	try:
-		print('Temp Control Start')
-		global temp
-		if sys.argv[1] is None
-			raise ValueError('!')
-		temp = Temp(float(sys.argv[1]))
-		print('Server Start')
-		run(host='0.0.0.0', port=8080, debug=True, reloader=False)
-	except:
-		import traceback
-		traceback.print_exc()
+	global temp
+	if sys.argv[1] is None:
+		raise ValueError('!')
+	temp = Temp(float(sys.argv[1]))
+	run(server='paste', host='0.0.0.0', port=8080, debug=True, reloader=False)
 
 if __name__ == '__main__':
 	main()

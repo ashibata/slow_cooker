@@ -1,3 +1,4 @@
+from time import sleep
 import datetime
 import json
 import os
@@ -31,7 +32,7 @@ class Temp:
 	def read_temp(self):
 		lines = self.read_device_temp()
 		while lines[0].strip()[-3:] != 'YES':
-			sleep(100)
+			sleep(0.2)
 			lines = slef.read_device_temp()
 		equals_pos = lines[1].find('t=')
 		if equals_pos != -1:
