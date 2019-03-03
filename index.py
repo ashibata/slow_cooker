@@ -2,10 +2,11 @@ from bottle import route, run, request, HTTPResponse, template, static_file
 from collections import OrderedDict
 import json
 import subprocess
+import sys
 import threading
 from temp import Temp
 
-TARGET_TEMPARATURE = 65
+TARGET_TEMPARATURE = 59
 
 @route('/static/:path#.+#', name='static')
 def static(path):
@@ -20,7 +21,9 @@ def main():
 	try:
 		print('Temp Control Start')
 		global temp
-		temp = Temp(TARGET_TEMPARATURE)
+		if sys.argv[1] is None
+			raise ValueError('!')
+		temp = Temp(float(sys.argv[1]))
 		print('Server Start')
 		run(host='0.0.0.0', port=8080, debug=True, reloader=False)
 	except:

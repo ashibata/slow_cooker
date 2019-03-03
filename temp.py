@@ -7,10 +7,12 @@ from time import sleep
 
 class Temp:
 	DEVICE_FILE = '/sys/bus/w1/devices/28-051680d0f7ff/w1_slave'
-	target_temp = 0
 	temp_json   = {}
 
 	def __init__(self, target_temp):
+		print target_temp
+		if target_temp is None or target_temp < 1 or 100.0 < 100.0:
+			raise ValueError('Target temp is not set or It is too low or too high!')
 		Temp.target_temp = target_temp
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(21, GPIO.OUT)
@@ -20,10 +22,6 @@ class Temp:
 		Temp.thread = threading.Thread(target=self.control_temp)
 		Temp.thread.daemon = True
 		Temp.thread.start()
-
-	def __del__(self):
-		GPIO.cleanup()
-		print'Temp class destructor worked'
 
 	def read_device_temp(self):
 		with open(Temp.DEVICE_FILE, 'r') as (f):
@@ -50,8 +48,6 @@ class Temp:
 		return data
 
 	def control_temp(self):
-		if Temp.target_temp == 0:
-			raise ValueError('Target temp is not set!')
 		try:
 			while True:
 				now = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
