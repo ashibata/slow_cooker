@@ -20,7 +20,7 @@ def root():
 def main():
 	global temp
 	if sys.argv[1] is None:
-		raise ValueError('!')
+		raise ValueError('Need to set target temparature as float')
 	temp = Temp(float(sys.argv[1]))
 	run(server='paste', host='0.0.0.0', port=8080, debug=True, reloader=False)
 

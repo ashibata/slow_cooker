@@ -9,18 +9,18 @@ from time import sleep
 class Temp:
 	DEVICE_FILE = '/sys/bus/w1/devices/28-051680d0f7ff/w1_slave'
 	temp_json   = {}
+	running     = True
 
 	def __init__(self, target_temp):
-		print target_temp
-		if target_temp is None or target_temp < 1 or 100.0 < 100.0:
-			raise ValueError('Target temp is not set or It is too low or too high!')
+		if target_temp < 1 or 100.0 < 100.0:
+			raise ValueError('Target temp is too low or too high!')
 		Temp.target_temp = target_temp
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(21, GPIO.OUT)
 		os.system('modprobe w1-gpio')
 		os.system('modprobe w1-therm')
 		Temp.lock   = threading.Lock()
-		Temp.thread = threading.Thread(target=self.control_temp)
+		Temp.thread = threading.Thread(target=self.keep_control_temp)
 		Temp.thread.daemon = True
 		Temp.thread.start()
 
@@ -48,9 +48,9 @@ class Temp:
 			data['datasets'].append(val)
 		return data
 
-	def control_temp(self):
+	def keep_control_temp(self):
 		try:
-			while True:
+			while Temp.running:
 				now = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
 				with Temp.lock:
 					Temp.temp_json[now] = self.read_temp()
@@ -61,8 +61,11 @@ class Temp:
 					GPIO.output(21, GPIO.LOW)
 					low_high = 'GPIO.LOW'
 				print(now, Temp.target_temp, Temp.temp_json[now], low_high)
-		except (KeyboardInterrupt, SystemExit):
-			print'Temp control_temp method execpt worked'
 		finally:
-			GPIO.cleanup()
+			self.stop_control_temp()
 			print'Temp control_temp method finally worked'
+
+	def stop_control_temp(self):
+		Temp.running = False
+		GPIO.cleanup()
+		print 'Temp stop_control_temp method worked'
