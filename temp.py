@@ -1,5 +1,6 @@
 from time import sleep
 import datetime
+import glob
 import json
 import os
 import RPi.GPIO as GPIO
@@ -7,13 +8,19 @@ import threading
 from time import sleep
 
 class Temp:
-	DEVICE_FILE = '/sys/bus/w1/devices/28-051680d0f7ff/w1_slave'
+	device_files = glob.glob('/sys/bus/w1/devices/*/w1_slave')
+	device_file = ""
 	temp_json   = {}
 	running     = True
 
 	def __init__(self, target_temp):
 		if target_temp < 1 or 100.0 < 100.0:
 			raise ValueError('Target temp is too low or too high!')
+		if len(Temp.device_files) == 0:
+			raise EnvironmentError("Thermo sensor device is not found.")
+		if len(Temp.device_files) > 1:
+			raise EnvironmentError("Too many thermo sensor devices found. Set only 1 device.")
+		Temp.device_file = Temp.device_files[0]
 		Temp.target_temp = target_temp
 		GPIO.setmode(GPIO.BCM)
 		GPIO.setup(21, GPIO.OUT)
@@ -25,7 +32,7 @@ class Temp:
 		Temp.thread.start()
 
 	def read_device_temp(self):
-		with open(Temp.DEVICE_FILE, 'r') as (f):
+		with open(Temp.device_file, 'r') as (f):
 			lines = f.readlines()
 			return lines
 
